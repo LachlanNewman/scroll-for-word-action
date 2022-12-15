@@ -6,8 +6,7 @@ inputs:
   page-id:
     description: 'Id of page to export'
   page-title:
-    description: 'Id of page to export'
-    required: true
+    description: 'Title of page to export'
   template-id:
     description: 'Id of template'
     required: true

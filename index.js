@@ -88,7 +88,7 @@ async function processPage(pageId,pageTitle){
 }
 
 
-function checkConfluenceInputs(confluenceToken , confluenceSpaceKey , confluenceUrl , confluenceUsername){
+function checkConfluenceInputs(confluenceToken, confluenceSpaceKey , confluenceUrl , confluenceUsername){
     const confluenceInputs =  confluenceToken && confluenceSpaceKey && confluenceUrl && confluenceUsername
     if(!confluenceInputs){
         throw new Error(`
@@ -110,18 +110,18 @@ async function main(){
     const confluenceUsername = core.getInput('confluence-username')
 
     if(dir){
-        checkConfluenceInputs(pageTitle,confluenceUrl,confluenceToken,confluenceSpaceKey,confluenceUsername)
+        checkConfluenceInputs(confluenceUrl,confluenceToken,confluenceSpaceKey,confluenceUsername)
         const files = getAllFiles(dir)
         files.forEach(async file => {
-            const pageId = await getPageId(pageTitle,confluenceUrl,confluenceToken,confluenceSpaceKey,confluenceUsername)
+            const pageId = await getPageId(file,confluenceUrl,confluenceToken,confluenceSpaceKey,confluenceUsername)
             await processPage(pageId,file)
         })
         return
     }
     
     let pageId = core.getInput('page-id');
-    if(!pageId){
-        checkConfluenceInputs(pageTitle,confluenceUrl,confluenceToken,confluenceSpaceKey,confluenceUsername)
+    if(!pageId && pageTitle){
+        checkConfluenceInputs(confluenceUrl,confluenceToken,confluenceSpaceKey,confluenceUsername)
         pageId = await getPageId(pageTitle,confluenceUrl,confluenceToken,confluenceSpaceKey,confluenceUsername)
         await processPage(pageId,pageTitle)
         return
