@@ -8,8 +8,20 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Hello world action step
-        id: hello
-        uses: ./action.yml
+        uses: ./
         with:
-          who-to-greet: 'Mona the Octocat'
+          page-title: SuperCoolFile
+          template-id: ba5554b1-779b-4df6-941e-9ac650686491
+          scroll-for-word-api-key: 88ec51ffc44f462c6855c24b9c7cd5b6
+          confluence-url: https://annalise-ai.atlassian.net/wiki/rest/api/content
+          confluence-username: Lachlan.Newman@annalise.ai
+          confluence-api-key: 6V07KG1IZZHs3XZeNARq7B0B
+          confluence-space-key: ~728381535
+      - run: ls -a
+      - uses: actions/upload-artifact@v3
+        with:
+          name: my-artifact
+          path: ./SuperCoolFile.docx

@@ -1,14 +1,27 @@
 name: 'Scroll for Word Action'
 description: 'Greet someone and record the time'
 inputs:
+  dir:
+    description: 'Directory of files to export'
   page-id:
     description: 'Id of page to export'
-  pageTitle:
+  page-title:
     description: 'Id of page to export'
-  confluence-api-key:
-    description: 'Confluence Api Key'
+    required: true
+  template-id:
+    description: 'Id of template'
+    required: true
   scroll-for-word-api-key:
     description: 'Scroll for Word Api Key'
+    required: true
+  confluence-url:
+    description: 'Conflunce Url'
+  confluence-api-key:
+    description: 'Confluence Api Key'
+  confluence-space-key:
+    description: 'Confluence Space Key'
+  confluence-username:
+    description: 'Confluence Username'
 runs:
   using: 'node16'
   main: 'index.js'

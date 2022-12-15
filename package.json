@@ -4,7 +4,9 @@
   "main": "index.js",
   "author": "Lachlan Newman",
   "license": "MIT",
+  "type": "module",
   "dependencies": {
-    "@actions/core": "^1.10.0"
+    "@actions/core": "^1.10.0",
+    "got": "^12.5.3"
   }
 }
