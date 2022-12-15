@@ -1,0 +1,10 @@
+{
+  "name": "scroll-for-word-exporter-action",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Lachlan Newman",
+  "license": "MIT",
+  "dependencies": {
+    "@actions/core": "^1.10.0"
+  }
+}

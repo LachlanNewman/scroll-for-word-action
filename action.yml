@@ -1,0 +1,14 @@
+name: 'Scroll for Word Action'
+description: 'Greet someone and record the time'
+inputs:
+  page-id:
+    description: 'Id of page to export'
+  pageTitle:
+    description: 'Id of page to export'
+  confluence-api-key:
+    description: 'Confluence Api Key'
+  scroll-for-word-api-key:
+    description: 'Scroll for Word Api Key'
+runs:
+  using: 'node16'
+  main: 'index.js'
