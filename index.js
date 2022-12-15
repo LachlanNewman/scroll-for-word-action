@@ -1,10 +1,16 @@
 import got from 'got'
 import core from '@actions/core';
-import { mkdirSync, writeFileSync } from 'fs';
+import fs from 'fs';
+import path from 'path'
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+
+const __dirname = path.dirname(__filename);
 
 const API_URL = "https://scroll-office.addons.k15t.com/api/public/1/exports"
 
-async function getPageId(title,confluenceurl,password,spaceKey,username){
+export async function getPageId(title,confluenceurl,password,spaceKey,username){
     const response =  await got.get(confluenceurl,{
         searchParams:{
             spaceKey,
@@ -40,11 +46,14 @@ async function getStatus(jobId,authHeader){
 }
 
 async function download_file(url,title){
+    const dir = './scroll-word-docs'
     const response  = await got.get(url,{
         headers:{},
     }).buffer()
-    await mkdirSync('./scroll-word-docs')
-    await writeFileSync(`./scroll-word-docs/${title}.docx`,response,{flag: "w"})
+    if (!fs.existsSync(dir)){
+        await fs.mkdirSync(dir);
+    }
+    await fs.writeFileSync(`./scroll-word-docs/${title}.docx`,response,{flag: "w"})
 }
 
 function getAllFiles(dirPath, arrayOfFiles) {
@@ -89,8 +98,7 @@ async function processPage(pageId,pageTitle){
 
 
 function checkConfluenceInputs(confluenceToken, confluenceSpaceKey , confluenceUrl , confluenceUsername){
-    const confluenceInputs =  confluenceToken && confluenceSpaceKey && confluenceUrl && confluenceUsername
-    if(!confluenceInputs){
+    if(!confluenceToken || !confluenceSpaceKey || !confluenceUrl || !confluenceUsername){
         throw new Error(`
         page-title,
         conflunce-url
@@ -129,5 +137,5 @@ async function main(){
 
     await processPage(pageId,pageTitle)
 }
-
 main()
+
