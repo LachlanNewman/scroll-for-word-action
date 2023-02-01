@@ -1,5 +1,6 @@
 import got from 'got'
 import core from '@actions/core';
+import fs from 'fs'
 
 const API_URL = "https://scroll-office.addons.k15t.com/api/public/1/exports"
 
@@ -13,6 +14,7 @@ export async function getPages(url,space,password,username){
         username,
         password,
     }).json()
+    console.log(response)
     return response.page.results.map(({id,title}) => ({id,title}))
 }
 
@@ -40,8 +42,11 @@ async function download_file(url,title){
     const response  = await got.get(url,{
         headers:{},
     }).buffer()
-    await mkdirSync('./scroll-word-docs')
-    await writeFileSync(`./scroll-word-docs/${title}.docx`,response,{flag: "w"})
+
+    if(!fs.existsSync('./scroll-word-docs'))
+        await fs.mkdirSync('./scroll-word-docs')
+    
+    await fs.writeFileSync(`./scroll-word-docs/${title}.docx`,response,{flag: "w"})
 }
 
 async function processPage(pageId,pageTitle,authToken,templateId){
@@ -65,16 +70,23 @@ async function processPage(pageId,pageTitle,authToken,templateId){
     await download_file(downloadUrl,pageTitle)
 }
 
-async function main(){
-    const confluenceToken = core.getInput('confluence-api-key')
-    const confluenceSpaceKey =  core.getInput('confluence-space-key')
-    const confluenceUrl = core.getInput('confluence-url')
-    const confluenceUsername = core.getInput('confluence-username')
-    const authToken = core.getInput('scroll-for-word-api-key')
-    const templateId = core.getInput('template-id')
-
-    const pages = getPages(confluenceUrl,confluenceSpaceKey,confluenceToken,confluenceUsername)
+async function main(confluenceToken,confluenceSpaceKey,confluenceUrl,confluenceUsername,authToken,templateId){
+    const pages = await getPages(confluenceUrl,confluenceSpaceKey,confluenceToken,confluenceUsername)
     await Promise.all(pages.map(({id,title}) => processPage(id,title,authToken,templateId)))
 }
 
-main()
+const confluenceToken = core.getInput('confluence-api-key')
+const confluenceSpaceKey =  core.getInput('confluence-space-key')
+const confluenceUrl = core.getInput('confluence-url')
+const confluenceUsername = core.getInput('confluence-username')
+const authToken = core.getInput('scroll-for-word-api-key')
+const templateId = core.getInput('template-id')
+
+main(
+    confluenceToken,
+    confluenceSpaceKey,
+    confluenceUrl,
+    confluenceUsername,
+    authToken,
+    templateId
+)
