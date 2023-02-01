@@ -1,28 +1,21 @@
 import got from 'got'
 import core from '@actions/core';
-import fs from 'fs';
-import path from 'path'
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-
-const __dirname = path.dirname(__filename);
+import fs from 'fs'
 
 const API_URL = "https://scroll-office.addons.k15t.com/api/public/1/exports"
 
-export async function getPageId(title,confluenceurl,password,spaceKey,username){
-    const response =  await got.get(confluenceurl,{
+export async function getPages(url,space,password,username){
+    const response =  await got.get(`${url}/space/${space}/content`,{
         searchParams:{
-            spaceKey,
-            title,
-            limit: 1,
+            limit: 9999,
             start: 0,
             expand: null
         },
         username,
         password,
     }).json()
-    return response['results'][0].id
+    console.log(response)
+    return response.page.results.map(({id,title}) => ({id,title}))
 }
 
 
@@ -46,36 +39,17 @@ async function getStatus(jobId,authHeader){
 }
 
 async function download_file(url,title){
-    const dir = './scroll-word-docs'
     const response  = await got.get(url,{
         headers:{},
     }).buffer()
-    if (!fs.existsSync(dir)){
-        await fs.mkdirSync(dir);
-    }
+
+    if(!fs.existsSync('./scroll-word-docs'))
+        await fs.mkdirSync('./scroll-word-docs')
+    
     await fs.writeFileSync(`./scroll-word-docs/${title}.docx`,response,{flag: "w"})
 }
 
-function getAllFiles(dirPath, arrayOfFiles) {
-    const files = fs.readdirSync(dirPath)
-  
-    arrayOfFiles = arrayOfFiles || []
-  
-    files.forEach(function(file) {
-      if (fs.statSync(dirPath + "/" + file).isDirectory()) {
-        arrayOfFiles = getAllFiles(dirPath + "/" + file, arrayOfFiles)
-      } else {
-        const {name} = path.parse(path.join(__dirname, dirPath, "/", file))
-        arrayOfFiles.push(name)
-      }
-    })
-  
-    return arrayOfFiles
-  }
-
-async function processPage(pageId,pageTitle){
-    const authToken = core.getInput('scroll-for-word-api-key')
-    const templateId = core.getInput('template-id')
+async function processPage(pageId,pageTitle,authToken,templateId){
     const authHeader = `Bearer ${authToken}`
     const exportParameters = {
         pageId,
@@ -96,46 +70,23 @@ async function processPage(pageId,pageTitle){
     await download_file(downloadUrl,pageTitle)
 }
 
-
-function checkConfluenceInputs(confluenceToken, confluenceSpaceKey , confluenceUrl , confluenceUsername){
-    if(!confluenceToken || !confluenceSpaceKey || !confluenceUrl || !confluenceUsername){
-        throw new Error(`
-        page-title,
-        conflunce-url
-        confluence-api-key,
-        confluence-space-key 
-        required when pageId is not given or dir is given`)
-    }
+async function main(confluenceToken,confluenceSpaceKey,confluenceUrl,confluenceUsername,authToken,templateId){
+    const pages = await getPages(confluenceUrl,confluenceSpaceKey,confluenceToken,confluenceUsername)
+    await Promise.all(pages.map(({id,title}) => processPage(id,title,authToken,templateId)))
 }
 
+const confluenceToken = core.getInput('confluence-api-key')
+const confluenceSpaceKey =  core.getInput('confluence-space-key')
+const confluenceUrl = core.getInput('confluence-url')
+const confluenceUsername = core.getInput('confluence-username')
+const authToken = core.getInput('scroll-for-word-api-key')
+const templateId = core.getInput('template-id')
 
-async function main(){
-    const dir = core.getInput('dir')
-    const pageTitle = core.getInput('page-title')
-    const confluenceToken = core.getInput('confluence-api-key')
-    const confluenceSpaceKey =  core.getInput('confluence-space-key')
-    const confluenceUrl = core.getInput('confluence-url')
-    const confluenceUsername = core.getInput('confluence-username')
-
-    if(dir){
-        checkConfluenceInputs(confluenceUrl,confluenceToken,confluenceSpaceKey,confluenceUsername)
-        const files = getAllFiles(dir)
-        files.forEach(async file => {
-            const pageId = await getPageId(file,confluenceUrl,confluenceToken,confluenceSpaceKey,confluenceUsername)
-            await processPage(pageId,file)
-        })
-        return
-    }
-    
-    let pageId = core.getInput('page-id');
-    if(!pageId && pageTitle){
-        checkConfluenceInputs(confluenceUrl,confluenceToken,confluenceSpaceKey,confluenceUsername)
-        pageId = await getPageId(pageTitle,confluenceUrl,confluenceToken,confluenceSpaceKey,confluenceUsername)
-        await processPage(pageId,pageTitle)
-        return
-    }
-
-    await processPage(pageId,pageTitle)
-}
-main()
-
+main(
+    confluenceToken,
+    confluenceSpaceKey,
+    confluenceUrl,
+    confluenceUsername,
+    authToken,
+    templateId
+)
