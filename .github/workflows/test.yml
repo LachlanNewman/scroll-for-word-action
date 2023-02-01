@@ -18,10 +18,9 @@ jobs:
           scroll-for-word-api-key: 88ec51ffc44f462c6855c24b9c7cd5b6
           confluence-url: https://annalise-ai.atlassian.net/wiki/rest/api/content
           confluence-username: Lachlan.Newman@annalise.ai
-          confluence-api-key: ${{ secrets.CONFLUENCE_API_KEY }}
+          confluence-api-key: mZZZttu96dqIMGL3Nbv8CD8F
           confluence-space-key: ~728381535
-      - uses: actions/upload-artifact@v3
+      - uses: actions/download-artifact@v3
         with:
           name: my-artifact
           path: ./scroll-word-docs
-
